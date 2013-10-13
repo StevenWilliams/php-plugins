@@ -31,29 +31,64 @@
  
 class Plugins
 {
-    public $hooks = array(array());
+    private $hooks;
     
-    function addToHook($hookname, $callback, $priority)
+    public function addToHook($hookname, $callback)
     {
-        $this->hooks[$hookname][] = $callback;
+		if(function_exists($callback))
+		{	
+			if(is_callable($callback))
+			{
+				$this->hooks[$hookname][] = $callback;
+			} else {
+				trigger_error("Function '$callback' attempted to be defined for hook '$hookname' cannot be called!", E_USER_WARNING);
+			}
+		} else {
+			trigger_error("Function '$callback' attempted to be defined for hook '$hookname' does not exist!", E_USER_WARNING);
+		}
     }
     
-    function callHook($hookname, $args = null)
+    public function callHook($hookname, $args = null)
     {
         $returns = array();
-        asort($this->hooks[$hookname]);
-        foreach ($this->hooks[$hookname] as $val) {
-            $returns[] = call_user_func($val, $args);
-        }
-        return $returns;
+        if(isset($this->hooks[$hookname]))
+        {
+			asort($this->hooks[$hookname]);
+			foreach ($this->hooks[$hookname] as $val) {
+				if(function_exists($val))
+				{
+					if(is_callable($val))
+					{
+					$returns[] = call_user_func($val, $args);
+					} else {
+						trigger_error("Function '$val' defined for hook '$hookname' cannot be called!", E_USER_WARNING);
+					}
+				} else {
+					trigger_error("Function '$val' defined for hook '$hookname' does not exist!", E_USER_WARNING);
+				}
+			}
+			return $returns;
+		} else {
+			trigger_error("No callbacks defined for hook '$hookname'!", E_USER_NOTICE);
+		}
     }
-    
-    function loadPlugins($plugindir)
+
+    public function loadPlugins($plugindir)
     {
-        $files = glob($plugindir . '/*.{php}', GLOB_BRACE);
-        foreach ($files as $file) {
-            require_once($file);
-        }
+		if(file_exists($plugindir))
+		{
+			$files = glob($plugindir . '/*.{php}', GLOB_BRACE);
+			if(count($files) != 0)
+			{
+				foreach ($files as $file) {
+					require_once($file);
+				}
+			} else {
+				trigger_error("No plugins found in plugin directory '$plugindir'!", E_USER_NOTICE);
+			}
+		} else {
+			trigger_error("Plugin directory '$plugindir' does not exists!", E_USER_WARNING);
+		}
     }
 }
 ?>
