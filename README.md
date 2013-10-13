@@ -82,7 +82,7 @@ function byeworld() {
  ```
  
  License
- ------
+------
  
  Licensed under the MIT License.
 
