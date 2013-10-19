@@ -25,7 +25,7 @@ Functions can be defined to hooks. The functions are run when hooks are called.
 
 To add a function to a hook
  ```php
- $PluginManager->addToHook($hookname, $function);
+ $PluginManager->addToHook($hookname, $function, $priority(optional);
  ```
  
 To call a hook:
