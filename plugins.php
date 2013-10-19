@@ -28,18 +28,18 @@
  * @version    1.0
  * @link       https://github.com/StevenWilliams/php-plugins
  */
- 
+<?php
 class Plugins
 {
     private $hooks;
     
-    public function addToHook($hookname, $callback)
+    public function addToHook($hookname, $callback, $priority=10)
     {
 		if(function_exists($callback))
 		{	
 			if(is_callable($callback))
 			{
-				$this->hooks[$hookname][] = $callback;
+				$this->hooks[$hookname][] = array("callback"=>$callback, "priority"=>$priority);
 			} else {
 				trigger_error("Function '$callback' attempted to be defined for hook '$hookname' cannot be called!", E_USER_WARNING);
 			}
@@ -50,11 +50,11 @@ class Plugins
     
     public function callHook($hookname, $args = null)
     {
+		$callbacks = $this->sortPriority($hookname);
         $returns = array();
-        if(isset($this->hooks[$hookname]))
+        if(isset($callbacks))
         {
-			asort($this->hooks[$hookname]);
-			foreach ($this->hooks[$hookname] as $val) {
+			foreach ($callbacks as $val) {
 				if(function_exists($val))
 				{
 					if(is_callable($val))
@@ -72,7 +72,17 @@ class Plugins
 			trigger_error("No callbacks defined for hook '$hookname'!", E_USER_NOTICE);
 		}
     }
-
+	private function sortPriority($hookname)
+	{
+		$prio = array();
+		$callb = array();
+		foreach ($this->hooks[$hookname] as $val) {
+			$prio[] = $val["priority"];
+			$callb[] = $val["callback"];
+		}
+			array_multisort($prio,$callb);
+			return $callb;
+	}
     public function loadPlugins($plugindir)
     {
 		if(file_exists($plugindir))
@@ -91,4 +101,6 @@ class Plugins
 		}
     }
 }
+?>
+
 ?>
