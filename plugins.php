@@ -28,7 +28,6 @@
  * @version    1.0
  * @link       https://github.com/StevenWilliams/php-plugins
  */
-<?php
 class Plugins
 {
     private $hooks;
